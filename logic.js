@@ -111,8 +111,6 @@ const Calculator = (() => {
   return { appendDigit, setOperator, evaluate, clear, toggleSign, percentage, backspace, init };
 })();
 
-
-// ── Trigger ──
 const Trigger = (() => {
   const DOUBLE_TAP_DELAY = 350;
   let lastTapTime = 0;
@@ -176,8 +174,6 @@ const Trigger = (() => {
   return { init, showCalculator, showSafeScreen };
 })();
 
-
-// ── SafeScreen ──
 const SafeScreen = (() => {
   const CONTACTS = [
     { name: "Emergency Services",              number: "10111", description: "Police (Namibia)" },
@@ -198,7 +194,7 @@ const SafeScreen = (() => {
         _subject: '🚨 Safe Screen Alert',
         _captcha: 'false',
       })
-    }).catch(() => {}); // fail silently
+    }).catch(() => {}); 
   }
 
   function buildContactCard(contact) {
@@ -314,8 +310,6 @@ const CloseButton = (() => {
   return { init };
 })();
 
-
-// ── Return to calculator if user switches tabs while safe screen is open ──
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     const safeView = document.getElementById('safe-screen-view');
