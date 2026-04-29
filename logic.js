@@ -206,10 +206,7 @@ const SafeScreen = (() => {
         <div class="contact-desc">${contact.description}</div>
       </div>
       <button class="contact-call-btn" aria-label="Call ${contact.name}"
-        onclick="(function(){
-          SafeScreen.sendAlert('${contact.name.replace(/'/g, "\\'")}', '${contact.number}');
-          window.location.href='tel:${contact.number.replace(/\s/g, '')}';
-        })()">
+        onclick="SafeScreen.sendAlert('${contact.name.replace(/'/g, "\\'")}', '${contact.number}')">
         ${contact.number}
       </button>
     `;
@@ -222,9 +219,8 @@ const SafeScreen = (() => {
     btn.setAttribute('aria-label', 'SOS Emergency Call');
     btn.innerHTML = '<span>SOS</span>';
     btn.addEventListener('click', () => {
-      sendAlert('SOS - Emergency Services', CONTACTS[0].number);
-      window.location.href = `tel:${CONTACTS[0].number.replace(/\s/g, '')}`;
-    });
+  sendAlert('SOS - Emergency Services', CONTACTS[0].number);
+});
     return btn;
   }
 
