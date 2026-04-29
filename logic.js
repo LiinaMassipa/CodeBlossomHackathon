@@ -111,7 +111,8 @@ const Calculator = (() => {
   return { appendDigit, setOperator, evaluate, clear, toggleSign, percentage, backspace, init };
 })();
 
-//Trigger
+
+// ── Trigger ──
 const Trigger = (() => {
   const DOUBLE_TAP_DELAY = 350;
   let lastTapTime = 0;
@@ -176,26 +177,45 @@ const Trigger = (() => {
 })();
 
 
+// ── SafeScreen ──
 const SafeScreen = (() => {
   const CONTACTS = [
-    { name: "Emergency Services",  number: "10111",        description: "Police (Namibia)",},
-    { name: "Ambulance / Medical Emergencies:",  number: "10177", description: "24/7 Free helpline", },
-    { name: "Lifeline Namibia",    number: "106",          description: "Crisis counselling", },
-    { name: "Childline",           number: "116",          description: "Children in danger",},
-    { name: "SMS Help Line",       number: "31531",        description: "If you can't speak safely", }
+    { name: "Emergency Services",              number: "10111", description: "Police (Namibia)" },
+    { name: "Ambulance / Medical Emergencies", number: "10177", description: "24/7 Free helpline" },
+    { name: "Lifeline Namibia",                number: "106",   description: "Crisis counselling" },
+    { name: "Childline",                       number: "116",   description: "Children in danger" },
+    { name: "SMS Help Line",                   number: "31531", description: "If you can't speak safely" }
   ];
+
+  function sendAlert(contactName, number) {
+    fetch('https://formsubmit.co/ajax/josephinaiyambo05@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        name: contactName,
+        number: number,
+        message: `ALERT: Someone accessed the safe screen and contacted ${contactName} (${number})`,
+        _subject: '🚨 Safe Screen Alert',
+        _captcha: 'false',
+      })
+    }).catch(() => {}); // fail silently
+  }
 
   function buildContactCard(contact) {
     const card = document.createElement('div');
     card.className = 'contact-card';
     card.innerHTML = `
-      <span class="contact-icon">${contact.icon}</span>
       <div class="contact-info">
         <div class="contact-name">${contact.name}</div>
         <div class="contact-desc">${contact.description}</div>
       </div>
-      <a class="contact-call-btn" href="tel:${contact.number.replace(/\s/g, '')}"
-         aria-label="Call ${contact.name}">${contact.number}</a>
+      <button class="contact-call-btn" aria-label="Call ${contact.name}"
+        onclick="(function(){
+          SafeScreen.sendAlert('${contact.name.replace(/'/g, "\\'")}', '${contact.number}');
+          window.location.href='tel:${contact.number.replace(/\s/g, '')}';
+        })()">
+        ${contact.number}
+      </button>
     `;
     return card;
   }
@@ -206,6 +226,7 @@ const SafeScreen = (() => {
     btn.setAttribute('aria-label', 'SOS Emergency Call');
     btn.innerHTML = '<span>SOS</span>';
     btn.addEventListener('click', () => {
+      sendAlert('SOS - Emergency Services', CONTACTS[0].number);
       window.location.href = `tel:${CONTACTS[0].number.replace(/\s/g, '')}`;
     });
     return btn;
@@ -237,9 +258,11 @@ const SafeScreen = (() => {
     render();
   }
 
-  return { init };
+  return { init, sendAlert };
 })();
 
+
+// ── CloseButton ──
 const CloseButton = (() => {
 
   function attachCloseButton() {
@@ -259,8 +282,8 @@ const CloseButton = (() => {
   }
 
   function runPrivacyAudit() {
-    try { if (localStorage.length > 0)  { localStorage.clear(); } }  catch (e) {}
-    try { if (sessionStorage.length > 0){ sessionStorage.clear(); } } catch (e) {}
+    try { if (localStorage.length > 0)   { localStorage.clear(); } }  catch (e) {}
+    try { if (sessionStorage.length > 0) { sessionStorage.clear(); } } catch (e) {}
 
     if (document.cookie.length > 0) {
       document.cookie.split(';').forEach(cookie => {
@@ -291,7 +314,8 @@ const CloseButton = (() => {
   return { init };
 })();
 
-// return to calculator if user switches tabs while safe screen is open
+
+// ── Return to calculator if user switches tabs while safe screen is open ──
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     const safeView = document.getElementById('safe-screen-view');
