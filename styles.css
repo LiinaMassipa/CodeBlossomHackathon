@@ -243,25 +243,35 @@ body {
 }
 
 #close-safe-btn {
-  background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
-  border: 1px solid #c084e8;
-  color: #7c3aed;
-  font-size: 13px;
-  padding: 6px 14px;
-  border-radius: 20px;
+  width: calc(100% - 40px);
+  max-width: 420px;
+  margin: 17px auto 0;
+  background: linear-gradient(135deg, #d70e0e, #cd2020);
+  border: 1px solid #f22f2f;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   transition: 0.2s;
+  flex-shrink: 0;
 }
 
 #close-safe-btn:hover {
-  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
-  color: #6d28d9;
+  background: linear-gradient(135deg, #fee9ef, #fed6d6);
+  color: #d92840;
   transform: scale(1.05);
+
 }
 
 #close-safe-btn:active {
   transform: scale(0.95);
-}
+} 
 
 #safe-screen-content {
   width: 100%;
@@ -430,4 +440,49 @@ body {
 
 .no-js #calculator-view {
   display: none;
+}
+
+/* Country selector dropdown */
+.country-selector-wrapper {
+  margin-bottom: 20px;
+}
+ 
+.country-selector-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9333ea;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  display: block;
+}
+ 
+.country-selector {
+  width: 100%;
+  background: linear-gradient(135deg, #ffffff, #faf5ff);
+  border: 1px solid #c084e8;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #3b0764;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239333ea' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  transition: 0.2s;
+}
+ 
+.country-selector:hover {
+  border-color: #a855f7;
+  box-shadow: 0 2px 10px rgba(168, 85, 247, 0.2);
+}
+ 
+.country-selector:focus {
+  outline: none;
+  border-color: #a855f7;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
 }

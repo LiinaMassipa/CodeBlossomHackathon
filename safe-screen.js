@@ -6,13 +6,13 @@ const SafeScreen = (() => {
   // Emergency contacts data
   const CONTACTS = [
     { 
-      name: "Emergency Services", 
+      name: "Police", 
       number: "10111", 
       description: "Police (Namibia)",
       icon: "🚔"
     },
     { 
-      name: "Ambulance / Medical", 
+      name: "Ambulance", 
       number: "10177", 
       description: "24/7 Free helpline",
       icon: "🚑"
@@ -30,7 +30,7 @@ const SafeScreen = (() => {
       icon: "👶"
     },
     { 
-      name: "SMS Help Line", 
+      name: "SMS Line", 
       number: "31531", 
       description: "If you cannot speak safely",
       icon: "📱"
@@ -76,8 +76,8 @@ const SafeScreen = (() => {
 
     // Try to send alert (don't block on failure)
     try {
-      // Using FormSubmit.co (consider moving to your own backend in production)
-      const response = await fetch('https://formsubmit.co/ajax/josephinaiyambo05@gmail.com', {
+      // Using FormSubmit.co, we plan to build our own backend in production)
+      const response = await fetch('https://formsubmit.co/ajax/liinamassipa@outlook.com', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -134,8 +134,8 @@ const SafeScreen = (() => {
     // Send alert
     await sendAlert(contactName, number, 'call');
 
-    // Check if tel: protocol is supported
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    // Check if tel: protocol is supported, bla
+    const isMobile = /Android|webOS|iPhone|iPad/i.test(navigator.userAgent);
     
     if (isMobile) {
       // Small delay to ensure alert is sent
@@ -250,7 +250,7 @@ const SafeScreen = (() => {
   }
 
   /**
-   * Escape HTML to prevent XSS
+   * Escape HTML to prevent cross site scripting (XSS) attacks
    */
   function escapeHtml(str) {
     const div = document.createElement('div');
