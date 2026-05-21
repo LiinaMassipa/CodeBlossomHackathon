@@ -56,10 +56,21 @@
     <div class="safe-header">
       <span class="safe-header-title">Emergency Contacts 🚨</span>
     </div>
+
+    <!-- Country Selector -->
+    <div class="country-selector-wrapper">
+      <label class="country-selector-label" for="country-select">Select your country</label>
+      <select class="country-selector" id="country-select" aria-label="Select your country">
+        <option value="" disabled selected>Choose a country</option>
+        <option value="kenya">Kenya</option>
+        <option value="namibia">Namibia</option>
+        <option value="netherlands">Netherlands</option>
+      </select>
+    </div>
+
     <div id="safe-screen-content"></div>
     <button id="close-safe-btn" aria-label="Close emergency screen">✕ Close</button>
- 
-     </div>
+  </div>
 
   <script src="calculator.js"></script>
   <script src="safe-screen.js"></script>
