@@ -243,3 +243,25 @@ const App = (() => {
 
 // Start the application
 App.init();
+const installButton = document.getElementById('installButton');
+
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installButton.style.display = 'block';
+});
+
+installButton.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installButton.style.display = 'none';
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  installButton.style.display = 'none';
+});
