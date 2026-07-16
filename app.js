@@ -1,13 +1,7 @@
-/**
- * Main Application Module
- * Initializes all components and handles global events
- */
+
 const App = (() => {
   let isInitialized = false;
 
-  /**
-   * Privacy audit - clear all stored data
-   */
   function runPrivacyAudit() {
     // Clear localStorage
     try {
@@ -23,7 +17,7 @@ const App = (() => {
       console.warn('[Privacy] Could not clear localStorage:', e);
     }
 
-    // Clear sessionStorage
+   
     try {
       if (sessionStorage.length > 0) {
         console.log('[Privacy] Clearing sessionStorage');
@@ -47,7 +41,7 @@ const App = (() => {
       console.warn('[Privacy] Could not clear cookies:', e);
     }
 
-    // Disable autocomplete on all inputs
+  
     const inputs = document.querySelectorAll('input, textarea');
     inputs.forEach(input => {
       input.setAttribute('autocomplete', 'off');
@@ -57,48 +51,33 @@ const App = (() => {
     });
   }
 
-  /**
-   * Handle visibility change (user switched tabs/apps)
-   */
+  
   function handleVisibilityChange() {
     if (document.hidden) {
       lockForPrivacy();
     }
   }
 
-  /**
-   * Instantly snap to the calculator with no fade. Called on any signal
-   * that the app is about to be backgrounded (tab switch, app switcher,
-   * screen lock), so the OS never gets a chance to screenshot the safe
-   * screen mid-animation.
-   */
+ 
   function lockForPrivacy() {
     const safeView = document.getElementById('safe-screen-view');
     if (safeView && safeView.style.display !== 'none' && typeof Trigger !== 'undefined') {
       console.log('[Privacy] App losing focus, snapping back to calculator');
       Trigger.hideSafeScreenInstantly();
     }
-    // Always clear storage when app loses focus
+    
     runPrivacyAudit();
   }
 
-  /**
-   * Handle page unload - final privacy cleanup
-   */
   function handleBeforeUnload() {
     runPrivacyAudit();
   }
 
-  /**
-   * Handle orientation change (mobile)
-   */
   function handleOrientationChange() {
-    // Small delay to allow orientation to complete
     setTimeout(() => {
       const calcView = document.getElementById('calculator-view');
       const safeView = document.getElementById('safe-screen-view');
       
-      // Re-center views if needed
       if (calcView && calcView.style.display !== 'none') {
         window.scrollTo(0, 0);
       }
@@ -108,9 +87,6 @@ const App = (() => {
     }, 100);
   }
 
-  /**
-   * Close button handler
-   */
   function initCloseButton() {
     const closeBtn = document.getElementById('close-safe-btn');
     if (!closeBtn) {
@@ -124,7 +100,6 @@ const App = (() => {
       Trigger.showCalculator();
     });
 
-    // Also handle touch events
     closeBtn.addEventListener('touchend', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -132,9 +107,7 @@ const App = (() => {
     });
   }
 
-  /**
-   * Add haptic feedback for mobile devices
-   */
+ 
   function addHapticFeedback() {
     const buttons = document.querySelectorAll('button');
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -148,9 +121,7 @@ const App = (() => {
     }
   }
 
-  /**
-   * Prevent zoom on double-tap (iOS)
-   */
+  
   function preventZoom() {
     document.addEventListener('touchstart', (e) => {
       if (e.touches.length > 1) {
@@ -168,9 +139,6 @@ const App = (() => {
     }, false);
   }
 
-  /**
-   * Debug helper (remove in production)
-   */
   function logInitialization() {
     console.log('[App] Initialized with components:', {
       calculator: typeof Calculator !== 'undefined',
@@ -180,9 +148,7 @@ const App = (() => {
     });
   }
 
-  /**
-   * Initialize the entire application
-   */
+
   function init() {
     if (isInitialized) {
       console.warn('[App] Already initialized');
@@ -191,7 +157,6 @@ const App = (() => {
 
     console.log('[App] Starting application...');
 
-    // Wait for DOM to be ready
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
         initializeComponents();
@@ -202,7 +167,7 @@ const App = (() => {
   }
 
   function initializeComponents() {
-    // Initialize all modules
+   
     if (typeof Calculator !== 'undefined') {
       Calculator.init();
       console.log('[App] Calculator initialized');
@@ -224,37 +189,31 @@ const App = (() => {
       console.error('[App] Trigger module not found');
     }
 
-    // Initialize UI components
     initCloseButton();
     addHapticFeedback();
     preventZoom();
     
-    // Set up global event listeners
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('blur', lockForPrivacy);
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('orientationchange', handleOrientationChange);
     
-    // Run initial privacy audit
     runPrivacyAudit();
     
     isInitialized = true;
     logInitialization();
-    
-    // Add a small delay to ensure everything is rendered
+  
     setTimeout(() => {
       document.body.classList.add('app-ready');
     }, 100);
   }
 
-  // Public API
   return {
     init,
     runPrivacyAudit
   };
 })();
 
-// Start the application
 App.init();
 const installButton = document.getElementById('installButton');
 

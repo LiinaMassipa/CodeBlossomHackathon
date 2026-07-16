@@ -1,10 +1,6 @@
-/**
- * Safe Screen Module
- * Manages emergency contacts display and alert system
- */
+
 const SafeScreen = (() => {
 
-  // Emergency contacts organised by country
   const CONTACTS_BY_COUNTRY = {
     namibia: [
       {
@@ -105,20 +101,14 @@ const SafeScreen = (() => {
     ]
   };
 
-  // The SOS number to dial depends on the selected country
   const SOS_NUMBER_BY_COUNTRY = {
     namibia: "10111",
     kenya: "999",
     netherlands: "112"
   };
 
-  // Current country – defaults to empty (prompts user to choose)
   let currentCountry = '';
 
-  // ── Custom contacts ──────────────────────────────────────────────
-  // Stored under a dedicated key so trigger.js's clearStorage() can
-  // explicitly preserve it (everything else in localStorage is wiped
-  // whenever the app loses focus, for privacy).
   const CUSTOM_CONTACTS_KEY = 'safecalc_custom_contacts';
 
   function loadCustomContacts() {
@@ -158,16 +148,11 @@ const SafeScreen = (() => {
     const custom = loadCustomContacts()[country] || [];
     return { base, custom };
   }
-
-  // Rate limiting for alerts
   let lastAlertTime = 0;
   const ALERT_COOLDOWN = 5000;
   let alertQueue = [];
   let isProcessingAlert = false;
 
-  /**
-   * Send alert via email (with rate limiting)
-   */
   async function sendAlert(contactName, number, method = 'call') {
     const now = Date.now();
 
@@ -216,9 +201,6 @@ const SafeScreen = (() => {
     processAlertQueue();
   }
 
-  /**
-   * Process queued alerts
-   */
   async function processAlertQueue() {
     if (isProcessingAlert || alertQueue.length === 0) return;
 
@@ -237,14 +219,7 @@ const SafeScreen = (() => {
     isProcessingAlert = false;
   }
 
-  /**
-   * Contact a number by call or SMS, with loading state.
-   * The dial/SMS action fires immediately — the alert email is sent in the
-   * background afterward so a slow or rate-limited network request never
-   * delays getting the phone app open. This is what was causing the
-   * inconsistent lag: the old code awaited the network alert BEFORE
-   * opening tel:.
-   */
+
   async function contactAction(contact, buttonElement) {
     if (buttonElement) {
       buttonElement.classList.add('loading');
@@ -257,13 +232,10 @@ const SafeScreen = (() => {
     const isMobile = /Android|webOS|iPhone|iPad/i.test(navigator.userAgent);
 
     if (isMobile) {
-      // Open the dialer/messaging app right away.
       window.location.href = target;
     } else {
       alert(`Please ${isSMS ? 'message' : 'call'} ${contact.name} at ${contact.number}`);
     }
-
-    // Fire-and-forget: don't block the dial/SMS action on this.
     sendAlert(contact.name, contact.number, isSMS ? 'sms' : 'call');
 
     setTimeout(() => {
@@ -274,15 +246,11 @@ const SafeScreen = (() => {
     }, 600);
   }
 
-  // Backward-compatible alias
   function makeCall(number, contactName, buttonElement) {
     return contactAction({ name: contactName, number, type: 'call' }, buttonElement);
   }
 
-  /**
-   * Build individual contact card. The whole card is clickable (not just
-   * the small number button) so it's faster to hit in an emergency.
-   */
+
   function buildContactCard(contact, onDelete) {
     const card = document.createElement('div');
     card.className = 'contact-card';
@@ -318,8 +286,6 @@ const SafeScreen = (() => {
       card.appendChild(delBtn);
     }
 
-    // Single handler on the card covers clicks on the icon, text, and the
-    // number button (button clicks bubble up), but ignores the delete button.
     card.addEventListener('click', (e) => {
       if (e.target.closest('.contact-delete-btn')) return;
       e.preventDefault();
@@ -335,9 +301,7 @@ const SafeScreen = (() => {
     return card;
   }
 
-  /**
-   * Build SOS button – number is country-aware
-   */
+
   function buildSOSButton() {
     const wrapper = document.createElement('div');
     wrapper.className = 'sos-wrapper';
@@ -370,7 +334,6 @@ const SafeScreen = (() => {
         isCalling = false;
       }
 
-      // Send the alert in the background — don't delay the dial.
       sendAlert('SOS - Emergency Services', sosNumber, 'sos');
 
       setTimeout(() => {
@@ -386,19 +349,12 @@ const SafeScreen = (() => {
     return wrapper;
   }
 
-  /**
-   * Escape HTML to prevent XSS
-   */
   function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
   }
 
-  /**
-   * Render contacts for the currently selected country.
-   * If no country is selected, show a prompt instead.
-   */
   function render() {
     const container = document.getElementById('safe-screen-content');
     if (!container) {
@@ -409,7 +365,6 @@ const SafeScreen = (() => {
     container.innerHTML = '';
 
     if (!currentCountry) {
-      // Show a friendly prompt to pick a country
       const prompt = document.createElement('div');
       prompt.className = 'country-prompt';
       prompt.innerHTML = `
@@ -422,16 +377,13 @@ const SafeScreen = (() => {
 
     const { base, custom } = getContactsForCountry(currentCountry);
 
-    // SOS button
     container.appendChild(buildSOSButton());
 
-    // Hint
     const hint = document.createElement('p');
     hint.className = 'safe-hint';
     hint.textContent = '⚠️ Tap a contact to call or message. Emergency services will be notified.';
     container.appendChild(hint);
 
-    // Contact cards
     const list = document.createElement('div');
     list.className = 'contacts-list';
     base.forEach(contact => {
@@ -448,9 +400,6 @@ const SafeScreen = (() => {
     container.appendChild(buildAddContactUI());
   }
 
-  /**
-   * Small inline "add a contact" form (collapsed by default).
-   */
   function buildAddContactUI() {
     const wrapper = document.createElement('div');
     wrapper.className = 'add-contact-wrapper';
@@ -508,9 +457,6 @@ const SafeScreen = (() => {
     return wrapper;
   }
 
-  /**
-   * Wire up the country dropdown
-   */
   function initCountrySelector() {
     const select = document.getElementById('country-select');
     if (!select) return;
@@ -521,15 +467,11 @@ const SafeScreen = (() => {
     });
   }
 
-  /**
-   * Initialize safe screen
-   */
   function init() {
     initCountrySelector();
-    render(); // Show the "please select a country" prompt initially
+    render(); 
   }
 
-  // Public API
   return {
     init,
     sendAlert,
