@@ -421,12 +421,90 @@ body {
   align-items: center;
   gap: 14px;
   transition: 0.2s;
+  cursor: pointer;
+  position: relative;
 }
 
 .contact-card:hover {
   border-color: #a855f7;
   transform: translateX(5px);
   box-shadow: 0 2px 10px rgba(168, 85, 247, 0.2);
+}
+
+.contact-card:active {
+  transform: scale(0.98) translateX(5px);
+}
+
+.contact-card:focus-visible {
+  outline: 2px solid #a855f7;
+  outline-offset: 2px;
+}
+
+.contact-delete-btn {
+  background: transparent;
+  border: none;
+  color: #c084e8;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.contact-delete-btn:hover {
+  color: #be185d;
+  background: #fce7f3;
+}
+
+/* ── Add contact form ─────────────────────────────── */
+.add-contact-wrapper {
+  margin-top: 16px;
+}
+
+.add-contact-toggle {
+  width: 100%;
+  background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+  border: 1px dashed #a855f7;
+  border-radius: 12px;
+  padding: 12px;
+  color: #7c3aed;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.add-contact-toggle:hover {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+}
+
+.add-contact-form {
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  background: #ffffff;
+  border: 1px solid #c084e8;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.add-contact-form input,
+.add-contact-form select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #c084e8;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #3b0764;
+}
+
+.add-contact-save {
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .contact-icon {

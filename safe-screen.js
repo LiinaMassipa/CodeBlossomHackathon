@@ -35,7 +35,8 @@ const SafeScreen = (() => {
         name: "SMS Line",
         number: "31531",
         description: "If you cannot speak safely",
-        icon: "📱"
+        icon: "📱",
+        type: "sms"
       }
     ],
     kenya: [
@@ -113,6 +114,50 @@ const SafeScreen = (() => {
 
   // Current country – defaults to empty (prompts user to choose)
   let currentCountry = '';
+
+  // ── Custom contacts ──────────────────────────────────────────────
+  // Stored under a dedicated key so trigger.js's clearStorage() can
+  // explicitly preserve it (everything else in localStorage is wiped
+  // whenever the app loses focus, for privacy).
+  const CUSTOM_CONTACTS_KEY = 'safecalc_custom_contacts';
+
+  function loadCustomContacts() {
+    try {
+      const raw = localStorage.getItem(CUSTOM_CONTACTS_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveCustomContacts(data) {
+    try {
+      localStorage.setItem(CUSTOM_CONTACTS_KEY, JSON.stringify(data));
+    } catch (e) {
+      console.warn('Could not save custom contacts:', e);
+    }
+  }
+
+  function addCustomContact(country, contact) {
+    const all = loadCustomContacts();
+    if (!all[country]) all[country] = [];
+    all[country].push(contact);
+    saveCustomContacts(all);
+  }
+
+  function removeCustomContact(country, index) {
+    const all = loadCustomContacts();
+    if (all[country]) {
+      all[country].splice(index, 1);
+      saveCustomContacts(all);
+    }
+  }
+
+  function getContactsForCountry(country) {
+    const base = CONTACTS_BY_COUNTRY[country] || [];
+    const custom = loadCustomContacts()[country] || [];
+    return { base, custom };
+  }
 
   // Rate limiting for alerts
   let lastAlertTime = 0;
@@ -193,57 +238,63 @@ const SafeScreen = (() => {
   }
 
   /**
-   * Make a phone call with loading state
+   * Contact a number by call or SMS, with loading state.
+   * The dial/SMS action fires immediately — the alert email is sent in the
+   * background afterward so a slow or rate-limited network request never
+   * delays getting the phone app open. This is what was causing the
+   * inconsistent lag: the old code awaited the network alert BEFORE
+   * opening tel:.
    */
-  async function makeCall(number, contactName, buttonElement) {
+  async function contactAction(contact, buttonElement) {
     if (buttonElement) {
       buttonElement.classList.add('loading');
       buttonElement.disabled = true;
     }
 
-    await sendAlert(contactName, number, 'call');
-
+    const isSMS = contact.type === 'sms';
+    const scheme = isSMS ? 'sms' : 'tel';
+    const target = `${scheme}:${contact.number.replace(/\s/g, '')}`;
     const isMobile = /Android|webOS|iPhone|iPad/i.test(navigator.userAgent);
 
     if (isMobile) {
-      setTimeout(() => {
-        window.location.href = `tel:${number.replace(/\s/g, '')}`;
-      }, 100);
+      // Open the dialer/messaging app right away.
+      window.location.href = target;
     } else {
-      setTimeout(() => {
-        alert(`Please call ${contactName} at ${number}`);
-        if (buttonElement) {
-          buttonElement.classList.remove('loading');
-          buttonElement.disabled = false;
-        }
-      }, 100);
+      alert(`Please ${isSMS ? 'message' : 'call'} ${contact.name} at ${contact.number}`);
     }
 
+    // Fire-and-forget: don't block the dial/SMS action on this.
+    sendAlert(contact.name, contact.number, isSMS ? 'sms' : 'call');
+
     setTimeout(() => {
-      if (buttonElement && buttonElement.classList.contains('loading')) {
+      if (buttonElement) {
         buttonElement.classList.remove('loading');
         buttonElement.disabled = false;
       }
-    }, 2000);
+    }, 600);
+  }
+
+  // Backward-compatible alias
+  function makeCall(number, contactName, buttonElement) {
+    return contactAction({ name: contactName, number, type: 'call' }, buttonElement);
   }
 
   /**
-   * Build individual contact card
+   * Build individual contact card. The whole card is clickable (not just
+   * the small number button) so it's faster to hit in an emergency.
    */
-  function buildContactCard(contact) {
+  function buildContactCard(contact, onDelete) {
     const card = document.createElement('div');
     card.className = 'contact-card';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label',
+      `${contact.type === 'sms' ? 'Message' : 'Call'} ${contact.name} at ${contact.number}`);
 
     const button = document.createElement('button');
     button.className = 'contact-call-btn';
     button.textContent = contact.number;
-    button.setAttribute('aria-label', `Call ${contact.name} at ${contact.number}`);
-
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      makeCall(contact.number, contact.name, button);
-    });
+    button.tabIndex = -1; // card itself is the primary click target
 
     card.innerHTML = `
       <div class="contact-icon">${contact.icon}</div>
@@ -253,6 +304,33 @@ const SafeScreen = (() => {
       </div>
     `;
     card.appendChild(button);
+
+    if (onDelete) {
+      const delBtn = document.createElement('button');
+      delBtn.className = 'contact-delete-btn';
+      delBtn.textContent = '✕';
+      delBtn.setAttribute('aria-label', `Remove ${contact.name}`);
+      delBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onDelete();
+      });
+      card.appendChild(delBtn);
+    }
+
+    // Single handler on the card covers clicks on the icon, text, and the
+    // number button (button clicks bubble up), but ignores the delete button.
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.contact-delete-btn')) return;
+      e.preventDefault();
+      contactAction(contact, button);
+    });
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        contactAction(contact, button);
+      }
+    });
 
     return card;
   }
@@ -281,22 +359,19 @@ const SafeScreen = (() => {
       button.classList.add('sos-loading');
 
       const sosNumber = SOS_NUMBER_BY_COUNTRY[currentCountry] || '112';
-      await sendAlert('SOS - Emergency Services', sosNumber, 'sos');
-
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
       if (isMobile) {
-        setTimeout(() => {
-          window.location.href = `tel:${sosNumber}`;
-        }, 100);
+        window.location.href = `tel:${sosNumber}`;
       } else {
-        setTimeout(() => {
-          alert(`EMERGENCY SOS\nPlease call emergency services at ${sosNumber} immediately!`);
-          button.disabled = false;
-          button.classList.remove('sos-loading');
-          isCalling = false;
-        }, 100);
+        alert(`EMERGENCY SOS\nPlease call emergency services at ${sosNumber} immediately!`);
+        button.disabled = false;
+        button.classList.remove('sos-loading');
+        isCalling = false;
       }
+
+      // Send the alert in the background — don't delay the dial.
+      sendAlert('SOS - Emergency Services', sosNumber, 'sos');
 
       setTimeout(() => {
         if (button.disabled) {
@@ -345,7 +420,7 @@ const SafeScreen = (() => {
       return;
     }
 
-    const contacts = CONTACTS_BY_COUNTRY[currentCountry] || [];
+    const { base, custom } = getContactsForCountry(currentCountry);
 
     // SOS button
     container.appendChild(buildSOSButton());
@@ -353,16 +428,84 @@ const SafeScreen = (() => {
     // Hint
     const hint = document.createElement('p');
     hint.className = 'safe-hint';
-    hint.textContent = '⚠️ Tap a number to call. Emergency services will be notified.';
+    hint.textContent = '⚠️ Tap a contact to call or message. Emergency services will be notified.';
     container.appendChild(hint);
 
     // Contact cards
     const list = document.createElement('div');
     list.className = 'contacts-list';
-    contacts.forEach(contact => {
+    base.forEach(contact => {
       list.appendChild(buildContactCard(contact));
     });
+    custom.forEach((contact, i) => {
+      list.appendChild(buildContactCard(contact, () => {
+        removeCustomContact(currentCountry, i);
+        render();
+      }));
+    });
     container.appendChild(list);
+
+    container.appendChild(buildAddContactUI());
+  }
+
+  /**
+   * Small inline "add a contact" form (collapsed by default).
+   */
+  function buildAddContactUI() {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'add-contact-wrapper';
+
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'add-contact-toggle';
+    toggleBtn.textContent = '+ Add a contact';
+
+    const form = document.createElement('div');
+    form.className = 'add-contact-form';
+    form.style.display = 'none';
+    form.innerHTML = `
+      <input type="text" class="add-contact-name" placeholder="Name" maxlength="40" />
+      <input type="tel" class="add-contact-number" placeholder="Phone number" maxlength="20" />
+      <select class="add-contact-type">
+        <option value="call">Call</option>
+        <option value="sms">SMS</option>
+      </select>
+      <button type="button" class="add-contact-save">Save contact</button>
+    `;
+
+    toggleBtn.addEventListener('click', () => {
+      form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+    });
+
+    form.querySelector('.add-contact-save').addEventListener('click', () => {
+      const nameInput = form.querySelector('.add-contact-name');
+      const numberInput = form.querySelector('.add-contact-number');
+      const typeSelect = form.querySelector('.add-contact-type');
+
+      const name = nameInput.value.trim();
+      const number = numberInput.value.trim();
+      const type = typeSelect.value;
+
+      if (!name || !number) {
+        alert('Please enter both a name and a number.');
+        return;
+      }
+
+      addCustomContact(currentCountry, {
+        name,
+        number,
+        type,
+        description: 'Custom contact',
+        icon: type === 'sms' ? '📱' : '📞'
+      });
+
+      nameInput.value = '';
+      numberInput.value = '';
+      render();
+    });
+
+    wrapper.appendChild(toggleBtn);
+    wrapper.appendChild(form);
+    return wrapper;
   }
 
   /**
@@ -390,6 +533,9 @@ const SafeScreen = (() => {
   return {
     init,
     sendAlert,
-    makeCall
+    makeCall,
+    contactAction,
+    addCustomContact,
+    removeCustomContact
   };
 })();

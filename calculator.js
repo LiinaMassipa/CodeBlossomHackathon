@@ -221,6 +221,11 @@ const Calculator = (() => {
     // Attach click handlers to all calculator buttons
     const buttons = document.querySelectorAll('.button-grid button');
     buttons.forEach(button => {
+      // #btn-plus is exclusively handled by Trigger (single tap = '+',
+      // double tap = open safe screen). Attaching a second handler here
+      // would fire setOperator('+') twice for a single press.
+      if (button.id === 'btn-plus') return;
+
       button.addEventListener('click', (e) => {
         e.stopPropagation();
         

@@ -13,7 +13,11 @@ const App = (() => {
     try {
       if (localStorage.length > 0) {
         console.log('[Privacy] Clearing localStorage');
+        const preservedContacts = localStorage.getItem('safecalc_custom_contacts');
         localStorage.clear();
+        if (preservedContacts) {
+          localStorage.setItem('safecalc_custom_contacts', preservedContacts);
+        }
       }
     } catch (e) {
       console.warn('[Privacy] Could not clear localStorage:', e);
@@ -58,16 +62,24 @@ const App = (() => {
    */
   function handleVisibilityChange() {
     if (document.hidden) {
-      const safeView = document.getElementById('safe-screen-view');
-      // If safe screen is visible when app loses focus, hide it for privacy
-      if (safeView && safeView.style.display !== 'none') {
-        console.log('[Privacy] App hidden, hiding safe screen');
-        Trigger.showCalculator();
-      }
-      
-      // Always clear storage when app loses focus
-      runPrivacyAudit();
+      lockForPrivacy();
     }
+  }
+
+  /**
+   * Instantly snap to the calculator with no fade. Called on any signal
+   * that the app is about to be backgrounded (tab switch, app switcher,
+   * screen lock), so the OS never gets a chance to screenshot the safe
+   * screen mid-animation.
+   */
+  function lockForPrivacy() {
+    const safeView = document.getElementById('safe-screen-view');
+    if (safeView && safeView.style.display !== 'none' && typeof Trigger !== 'undefined') {
+      console.log('[Privacy] App losing focus, snapping back to calculator');
+      Trigger.hideSafeScreenInstantly();
+    }
+    // Always clear storage when app loses focus
+    runPrivacyAudit();
   }
 
   /**
@@ -219,6 +231,7 @@ const App = (() => {
     
     // Set up global event listeners
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', lockForPrivacy);
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('orientationchange', handleOrientationChange);
     
