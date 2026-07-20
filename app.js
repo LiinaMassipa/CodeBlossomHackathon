@@ -1,9 +1,8 @@
-
 const App = (() => {
   let isInitialized = false;
 
   function runPrivacyAudit() {
-    // Clear localStorage
+
     try {
       if (localStorage.length > 0) {
         console.log('[Privacy] Clearing localStorage');
@@ -17,7 +16,6 @@ const App = (() => {
       console.warn('[Privacy] Could not clear localStorage:', e);
     }
 
-   
     try {
       if (sessionStorage.length > 0) {
         console.log('[Privacy] Clearing sessionStorage');
@@ -27,7 +25,6 @@ const App = (() => {
       console.warn('[Privacy] Could not clear sessionStorage:', e);
     }
 
-    // Clear cookies
     try {
       if (document.cookie.length > 0) {
         console.log('[Privacy] Clearing cookies');
@@ -41,7 +38,6 @@ const App = (() => {
       console.warn('[Privacy] Could not clear cookies:', e);
     }
 
-  
     const inputs = document.querySelectorAll('input, textarea');
     inputs.forEach(input => {
       input.setAttribute('autocomplete', 'off');
@@ -51,21 +47,19 @@ const App = (() => {
     });
   }
 
-  
   function handleVisibilityChange() {
     if (document.hidden) {
       lockForPrivacy();
     }
   }
 
- 
   function lockForPrivacy() {
     const safeView = document.getElementById('safe-screen-view');
     if (safeView && safeView.style.display !== 'none' && typeof Trigger !== 'undefined') {
       console.log('[Privacy] App losing focus, snapping back to calculator');
       Trigger.hideSafeScreenInstantly();
     }
-    
+
     runPrivacyAudit();
   }
 
@@ -74,10 +68,11 @@ const App = (() => {
   }
 
   function handleOrientationChange() {
+
     setTimeout(() => {
       const calcView = document.getElementById('calculator-view');
       const safeView = document.getElementById('safe-screen-view');
-      
+
       if (calcView && calcView.style.display !== 'none') {
         window.scrollTo(0, 0);
       }
@@ -107,11 +102,10 @@ const App = (() => {
     });
   }
 
- 
   function addHapticFeedback() {
     const buttons = document.querySelectorAll('button');
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
+
     if (isMobile && 'vibrate' in navigator) {
       buttons.forEach(button => {
         button.addEventListener('click', () => {
@@ -121,14 +115,13 @@ const App = (() => {
     }
   }
 
-  
   function preventZoom() {
     document.addEventListener('touchstart', (e) => {
       if (e.touches.length > 1) {
         e.preventDefault();
       }
     }, { passive: false });
-    
+
     let lastTouchEnd = 0;
     document.addEventListener('touchend', (e) => {
       const now = Date.now();
@@ -148,7 +141,6 @@ const App = (() => {
     });
   }
 
-
   function init() {
     if (isInitialized) {
       console.warn('[App] Already initialized');
@@ -167,7 +159,7 @@ const App = (() => {
   }
 
   function initializeComponents() {
-   
+
     if (typeof Calculator !== 'undefined') {
       Calculator.init();
       console.log('[App] Calculator initialized');
@@ -192,17 +184,17 @@ const App = (() => {
     initCloseButton();
     addHapticFeedback();
     preventZoom();
-    
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('blur', lockForPrivacy);
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('orientationchange', handleOrientationChange);
-    
+
     runPrivacyAudit();
-    
+
     isInitialized = true;
     logInitialization();
-  
+
     setTimeout(() => {
       document.body.classList.add('app-ready');
     }, 100);
@@ -215,25 +207,37 @@ const App = (() => {
 })();
 
 App.init();
-const installButton = document.getElementById('installButton');
+
+const installBanner = document.getElementById('install-banner');
+const installBannerBtn = document.getElementById('install-banner-btn');
+const installBannerDismiss = document.getElementById('install-banner-dismiss');
 
 let deferredPrompt;
 
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  installButton.style.display = 'block';
+  if (installBanner) installBanner.classList.add('visible');
 });
 
-installButton.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  installButton.style.display = 'none';
-});
+if (installBannerBtn) {
+  installBannerBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log('[Install] User choice:', outcome);
+    deferredPrompt = null;
+    if (installBanner) installBanner.classList.remove('visible');
+  });
+}
+
+if (installBannerDismiss) {
+  installBannerDismiss.addEventListener('click', () => {
+    if (installBanner) installBanner.classList.remove('visible');
+  });
+}
 
 window.addEventListener('appinstalled', () => {
   deferredPrompt = null;
-  installButton.style.display = 'none';
+  if (installBanner) installBanner.classList.remove('visible');
 });

@@ -8,8 +8,7 @@
   <link rel="stylesheet" href="styles.css" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" href="images/logo.png" type="image/png">
-    <!--ios support-->
-    <link rel="apple-touch-icon" href="icons/icon-96x96.png" />
+        <link rel="apple-touch-icon" href="icons/icon-96x96.png" />
    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
    <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -20,38 +19,44 @@
 </head>
 <body>
 
+  <div id="install-banner" class="install-banner">
+    <span class="install-banner-text">Add this app to your home screen</span>
+    <div class="install-banner-actions">
+      <button id="install-banner-btn" class="install-banner-btn">Install</button>
+      <button id="install-banner-dismiss" class="install-banner-dismiss" aria-label="Dismiss">✕</button>
+    </div>
+  </div>
+
   <div id="calculator-view">
     <div class="Calculator">
-
-      <div id="calc-display">
+      
+            <div id="calc-display">
         <div id="display-expr" class="display-expr"></div>
         <div id="display-main" class="display-main">0</div>
       </div>
 
       <div class="button-grid">
-        <button id="installButton" style="display:none;">Install</button>
-
-        <button class="fn clear" data-action="clear">AC</button>
+                        <button class="fn clear" data-action="clear">AC</button>
         <button class="fn" data-action="toggleSign">+/-</button>
         <button class="fn" data-action="percentage">%</button>
         <button class="operator" data-operator="/">÷</button>
 
-        <button data-digit="7">7</button>
+                <button data-digit="7">7</button>
         <button data-digit="8">8</button>
         <button data-digit="9">9</button>
         <button class="operator" data-operator="*">×</button>
 
-        <button data-digit="4">4</button>
+                <button data-digit="4">4</button>
         <button data-digit="5">5</button>
         <button data-digit="6">6</button>
         <button class="operator" data-operator="-">−</button>
 
-        <button data-digit="1">1</button>
+                <button data-digit="1">1</button>
         <button data-digit="2">2</button>
         <button data-digit="3">3</button>
         <button class="operator" id="btn-plus" data-operator="+">+</button>
 
-        <button class="fn" data-action="backspace">⌫</button>
+                <button class="fn" data-action="backspace">⌫</button>
         <button data-digit="0">0</button>
         <button data-digit=".">.</button>
         <button class="equal" data-action="evaluate">=</button>
@@ -64,7 +69,7 @@
       <span class="safe-header-title">Emergency Contacts 🚨</span>
     </div>
 
-    <div class="country-selector-wrapper">
+        <div class="country-selector-wrapper">
       <label class="country-selector-label" for="country-select">Select your country</label>
       <select class="country-selector" id="country-select" aria-label="Select your country">
         <option value="" disabled selected>Choose a country</option>
