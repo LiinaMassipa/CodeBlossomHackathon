@@ -1,4 +1,4 @@
-const CACHE_NAME = 'safecalc-v3';
+const CACHE_NAME = 'safecalc-v4';
 const ASSETS = [
   '/',
   '/index.html',
