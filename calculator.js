@@ -163,6 +163,16 @@ const Calculator = (() => {
   }
 
   function handleKeyboard(e) {
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
+      return;
+    }
+
+    const safeView = document.getElementById('safe-screen-view');
+    if (safeView && safeView.style.display !== 'none') {
+      return;
+    }
+
     const calculatorKeys = ['+', '-', '*', '/', 'Enter', '=', 'Backspace', 'Escape', '.'];
     if (calculatorKeys.includes(e.key)) {
       e.preventDefault();
@@ -194,9 +204,6 @@ const Calculator = (() => {
 
     const buttons = document.querySelectorAll('.button-grid button');
     buttons.forEach(button => {
-
-      if (button.id === 'btn-plus') return;
-
       button.addEventListener('click', (e) => {
         e.stopPropagation();
 
