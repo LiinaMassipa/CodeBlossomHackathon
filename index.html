@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="styles.css" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" href="images/logo.png" type="image/png">
-    <!--ios support-->
+    
     <link rel="apple-touch-icon" href="icons/icon-96x96.png" />
    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
    <meta name="apple-mobile-web-app-capable" content="yes">
@@ -22,8 +22,7 @@
 
   <div id="calculator-view">
     <div class="Calculator">
-      
-      <!-- Fixed Display with Expression and Main Display -->
+
       <div id="calc-display">
         <div id="display-expr" class="display-expr"></div>
         <div id="display-main" class="display-main">0</div>
@@ -69,22 +68,29 @@
       <span class="safe-header-title">Emergency Contacts 🚨</span>
     </div>
 
-    <!-- Country Selector -->
+    <div class="country-selector-wrapper">
+      <label class="country-selector-label" for="language-select" data-i18n="language_label">Language</label>
+      <select class="country-selector" id="language-select" aria-label="Select language">
+        <option value="en" data-i18n="language_en">English</option>
+        <option value="sw" data-i18n="language_sw">Swahili</option>
+      </select>
+    </div>
+
     <div class="country-selector-wrapper">
       <label class="country-selector-label" for="country-select">Select your country</label>
       <select class="country-selector" id="country-select" aria-label="Select your country">
         <option value="" disabled selected>Choose a country</option>
-        <option value="kenya">Kenya</option>
-        <option value="namibia">Namibia</option>
-        <option value="netherlands">Netherlands</option>
+  <option value="kenya" data-i18n="country_kenya">Kenya</option>
+        <option value="namibia" data-i18n="country_namibia">Namibia</option>
+        <option value="netherlands" data-i18n="country_netherlands">Netherlands</option>
       </select>
     </div>
-
-    <div id="safe-screen-content"></div>
-    <button id="close-safe-btn" aria-label="Close emergency screen">✕ Close</button>
+<div id="safe-screen-content"></div>
+    <button id="close-safe-btn" data-i18n-aria="close_safe_aria" aria-label="Close emergency screen" data-i18n="close_safe_btn">✕ Close</button>
   </div>
 
   <script src="calculator.js"></script>
+  <script src="i18n.js"></script>
   <script src="safe-screen.js"></script>
   <script src="trigger.js"></script>
   <script src="app.js"></script>

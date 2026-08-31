@@ -1,8 +1,9 @@
-const CACHE_NAME = 'safecalc-v2';
+const CACHE_NAME = 'safecalc-v4';
 const ASSETS = [
   '/',
   '/index.html',
   '/styles.css',
+  '/i18n.js',
   '/calculator.js',
   '/safe-screen.js',
   '/trigger.js',

@@ -61,16 +61,21 @@ const Trigger = (() => {
       clearTimeout(tapTimer);
     }
 
-    // Double tap detected
+    // Double tap detected -> open the safe screen, do NOT add '+' to the sum
     if (tapCount >= 2) {
       tapCount = 0;
       onDoubleTap();
       return;
     }
 
-    // Reset tap count after delay
+    // Not a double tap (yet). We intercept the click/touchend on this button,
+    // so calculator.js never sees it. Once the double-tap window closes
+    // without a second tap, treat it as a normal '+' press.
     tapTimer = setTimeout(() => {
       tapCount = 0;
+      if (typeof Calculator !== 'undefined') {
+        Calculator.setOperator('+');
+      }
     }, DOUBLE_TAP_DELAY);
   }
 
@@ -134,11 +139,46 @@ const Trigger = (() => {
   }
 
   /**
+   * Instantly snap back to the calculator with NO fade/animation.
+   * Used when the app loses focus (tab switch, app-switcher, screen lock)
+   * so the OS can't capture a screenshot mid-fade with the safe screen
+   * still partially visible.
+   */
+  function hideSafeScreenInstantly() {
+    const calcView = document.getElementById('calculator-view');
+    const safeView = document.getElementById('safe-screen-view');
+
+    if (safeView) {
+      safeView.style.transition = 'none';
+      safeView.style.display = 'none';
+      safeView.style.opacity = '1'; // reset so the next open looks normal
+    }
+
+    if (calcView) {
+      calcView.style.transition = 'none';
+      calcView.style.display = 'flex';
+      calcView.style.opacity = '1';
+    }
+
+    // Re-enable transitions on the next frame so future user-initiated
+    // opens/closes still animate normally.
+    requestAnimationFrame(() => {
+      if (safeView) safeView.style.transition = '';
+      if (calcView) calcView.style.transition = '';
+    });
+
+    clearStorage();
+  }
+
+  /**
    * Clear browser storage for privacy
    */
   function clearStorage() {
     try {
+      // Preserve the user's custom emergency contacts across privacy wipes.
+      const preserved = localStorage.getItem('safecalc_custom_contacts');
       if (localStorage.length > 0) localStorage.clear();
+      if (preserved) localStorage.setItem('safecalc_custom_contacts', preserved);
     } catch (e) {}
     
     try {
@@ -200,6 +240,7 @@ const Trigger = (() => {
   return {
     init,
     showCalculator,
-    showSafeScreen
+    showSafeScreen,
+    hideSafeScreenInstantly
   };
 })();
