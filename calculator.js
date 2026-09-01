@@ -1,4 +1,3 @@
-
 const Calculator = (() => {
   let currentInput = '';
   let previousInput = '';
@@ -7,25 +6,21 @@ const Calculator = (() => {
   let lastButtonPress = 0;
   const DEBOUNCE_DELAY = 100;
 
-  // DOM elements
   const mainDisplay = () => document.getElementById('display-main');
   const exprDisplay = () => document.getElementById('display-expr');
 
-  // Helper: Update main display
   function updateMainDisplay(value) {
     const el = mainDisplay();
     if (!el) return;
     el.textContent = value || '0';
   }
 
-  // Helper: Update expression display
   function updateExprDisplay(value) {
     const el = exprDisplay();
     if (!el) return;
     el.textContent = value || '';
   }
 
-  // Helper: Get operator symbol for display
   function getOperatorSymbol(op) {
     const symbols = {
       '+': '+',
@@ -36,7 +31,6 @@ const Calculator = (() => {
     return symbols[op] || op;
   }
 
-  // Debounce utility
   function debounce(func, delay) {
     let timeout;
     return function(...args) {
@@ -45,9 +39,7 @@ const Calculator = (() => {
     };
   }
 
-  // Append digit or decimal
   function appendDigit(digit) {
-    // Prevent rapid multiple presses
     const now = Date.now();
     if (now - lastButtonPress < DEBOUNCE_DELAY) return;
     lastButtonPress = now;
@@ -58,17 +50,14 @@ const Calculator = (() => {
       updateExprDisplay('');
     }
 
-    // Prevent multiple decimals
     if (digit === '.' && currentInput.includes('.')) return;
 
-    // Limit length
     if (currentInput.length >= 12) return;
 
     currentInput += digit;
     updateMainDisplay(currentInput);
   }
 
-  // Set operator
   function setOperator(op) {
     const now = Date.now();
     if (now - lastButtonPress < DEBOUNCE_DELAY) return;
@@ -77,27 +66,20 @@ const Calculator = (() => {
     if (currentInput === '' && previousInput === '') return;
     justEvaluated = false;
 
-    // If we have both numbers, evaluate first
     if (currentInput !== '' && previousInput !== '') {
-      evaluate();
+      evaluateCore();
     }
 
     operator = op;
     previousInput = currentInput || previousInput;
     currentInput = '';
 
-    // Show expression
     if (previousInput) {
       updateExprDisplay(`${previousInput} ${getOperatorSymbol(operator)}`);
     }
   }
 
-  // Evaluate the expression
-  function evaluate() {
-    const now = Date.now();
-    if (now - lastButtonPress < DEBOUNCE_DELAY) return;
-    lastButtonPress = now;
-
+  function evaluateCore() {
     if (operator === null || previousInput === '') return;
 
     const prev = parseFloat(previousInput);
@@ -129,13 +111,10 @@ const Calculator = (() => {
         return;
     }
 
-    // Round to 12 significant digits
     result = parseFloat(result.toPrecision(12));
 
-    // Show full expression in history
     updateExprDisplay(`${previousInput} ${getOperatorSymbol(operator)} ${currentInput} =`);
 
-    // Update state
     currentInput = String(result);
     previousInput = '';
     operator = null;
@@ -143,7 +122,14 @@ const Calculator = (() => {
     updateMainDisplay(currentInput);
   }
 
-  // Clear everything
+  function evaluate() {
+    const now = Date.now();
+    if (now - lastButtonPress < DEBOUNCE_DELAY) return;
+    lastButtonPress = now;
+
+    evaluateCore();
+  }
+
   function clear() {
     currentInput = '';
     previousInput = '';
@@ -153,7 +139,6 @@ const Calculator = (() => {
     updateExprDisplay('');
   }
 
-  // Toggle positive/negative
   function toggleSign() {
     if (!currentInput || currentInput === '0') return;
     currentInput = currentInput.startsWith('-') 
@@ -162,14 +147,12 @@ const Calculator = (() => {
     updateMainDisplay(currentInput);
   }
 
-  // Convert to percentage
   function percentage() {
     if (!currentInput || currentInput === '0') return;
     currentInput = String(parseFloat(currentInput) / 100);
     updateMainDisplay(currentInput);
   }
 
-  // Backspace / delete last digit
   function backspace() {
     if (justEvaluated) {
       clear();
@@ -181,9 +164,17 @@ const Calculator = (() => {
     }
   }
 
-  // Keyboard handler
   function handleKeyboard(e) {
-    // Prevent default for calculator keys
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
+      return;
+    }
+
+    const safeView = document.getElementById('safe-screen-view');
+    if (safeView && safeView.style.display !== 'none') {
+      return;
+    }
+
     const calculatorKeys = ['+', '-', '*', '/', 'Enter', '=', 'Backspace', 'Escape', '.'];
     if (calculatorKeys.includes(e.key)) {
       e.preventDefault();
@@ -210,11 +201,9 @@ const Calculator = (() => {
     }
   }
 
-  // Initialize event listeners
   function init() {
     document.addEventListener('keydown', handleKeyboard);
 
-    // Attach click handlers to all calculator buttons
     const buttons = document.querySelectorAll('.button-grid button');
     buttons.forEach(button => {
       // #btn-plus is exclusively handled by Trigger (single tap = '+',
@@ -224,8 +213,7 @@ const Calculator = (() => {
 
       button.addEventListener('click', (e) => {
         e.stopPropagation();
-        
-        // Handle based on data attributes
+
         if (button.hasAttribute('data-digit')) {
           appendDigit(button.getAttribute('data-digit'));
         } else if (button.hasAttribute('data-operator')) {
@@ -256,7 +244,6 @@ const Calculator = (() => {
     updateMainDisplay('0');
   }
 
-  // Public API
   return {
     init,
     appendDigit,

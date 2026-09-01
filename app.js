@@ -1,7 +1,9 @@
 const App = (() => {
   let isInitialized = false;
 
+
   function runPrivacyAudit() {
+
     try {
       if (localStorage.length > 0) {
         console.log('[Privacy] Clearing localStorage');
@@ -65,11 +67,12 @@ const App = (() => {
     runPrivacyAudit();
   }
 
+
   function handleOrientationChange() {
     setTimeout(() => {
       const calcView = document.getElementById('calculator-view');
       const safeView = document.getElementById('safe-screen-view');
-      
+
       if (calcView && calcView.style.display !== 'none') {
         window.scrollTo(0, 0);
       }
@@ -78,7 +81,6 @@ const App = (() => {
       }
     }, 100);
   }
-
 
   function initLanguageSelector() {
     const select = document.getElementById('language-select');
@@ -89,7 +91,6 @@ const App = (() => {
 
     if (typeof I18n === 'undefined') return;
 
-    // Reflect whatever locale I18n.init() already detected/selected.
     select.value = I18n.getLocale();
 
     select.addEventListener('change', () => {
@@ -174,6 +175,7 @@ const App = (() => {
   }
 
   function initializeComponents() {
+    
     function safeInit(name, mod, fn) {
       try {
         fn();
@@ -216,7 +218,7 @@ const App = (() => {
     window.addEventListener('blur', lockForPrivacy);
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('orientationchange', handleOrientationChange);
- 
+
     runPrivacyAudit();
     
     isInitialized = true;
