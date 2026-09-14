@@ -1,4 +1,3 @@
-
 const Calculator = (() => {
   let currentInput = '';
   let previousInput = '';
@@ -68,7 +67,7 @@ const Calculator = (() => {
     justEvaluated = false;
 
     if (currentInput !== '' && previousInput !== '') {
-      evaluate();
+      evaluateCore();
     }
 
     operator = op;
@@ -80,11 +79,7 @@ const Calculator = (() => {
     }
   }
 
-  function evaluate() {
-    const now = Date.now();
-    if (now - lastButtonPress < DEBOUNCE_DELAY) return;
-    lastButtonPress = now;
-
+  function evaluateCore() {
     if (operator === null || previousInput === '') return;
 
     const prev = parseFloat(previousInput);
@@ -125,6 +120,14 @@ const Calculator = (() => {
     operator = null;
     justEvaluated = true;
     updateMainDisplay(currentInput);
+  }
+
+  function evaluate() {
+    const now = Date.now();
+    if (now - lastButtonPress < DEBOUNCE_DELAY) return;
+    lastButtonPress = now;
+
+    evaluateCore();
   }
 
   function clear() {

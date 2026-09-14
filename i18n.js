@@ -66,7 +66,7 @@ const I18n = (() => {
       country_placeholder: "Chagua nchi",
       country_kenya: "Kenya",
       country_namibia: "Namibia",
-      country_netherlands: "Uholanzi",
+      country_netherlands: "Netherlands",
       close_safe_btn: "\u2715 Funga",
       close_safe_aria: "Funga skrini ya dharura",
       language_label: "Lugha",
@@ -127,8 +127,6 @@ const I18n = (() => {
   function setLocale(lang) {
     currentLocale = STRINGS[lang] ? lang : FALLBACK_LOCALE;
     applyStaticTranslations();
-    // Re-render dynamic content (contact cards, SOS button, etc.) so it
-    // picks up the new language immediately, not just static [data-i18n] text.
     if (typeof SafeScreen !== 'undefined' && typeof SafeScreen.render === 'function') {
       SafeScreen.render();
     }

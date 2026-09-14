@@ -1,15 +1,11 @@
-/**
- * Trigger Module
- * Handles double-tap detection on the '+' button to reveal emergency screen
- */
 const Trigger = (() => {
-  const DOUBLE_TAP_DELAY = 350; // milliseconds
+  const DOUBLE_TAP_DELAY = 350;
   let lastTapTime = 0;
   let tapCount = 0;
   let tapTimer = null;
   let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   let lastTriggerTime = 0;
-  const TRIGGER_COOLDOWN = 1000; // Prevent rapid triggering
+  const TRIGGER_COOLDOWN = 1000;
 
   /**
    * Show visual feedback for double-tap
@@ -17,7 +13,7 @@ const Trigger = (() => {
   function showVisualFeedback() {
     const plusBtn = document.getElementById('btn-plus');
     if (!plusBtn) return;
-    
+
     plusBtn.classList.add('double-tap-hint');
     setTimeout(() => {
       plusBtn.classList.remove('double-tap-hint');
@@ -31,7 +27,7 @@ const Trigger = (() => {
     const now = Date.now();
     if (now - lastTriggerTime < TRIGGER_COOLDOWN) return;
     lastTriggerTime = now;
-    
+
     showVisualFeedback();
     showSafeScreen();
   }
@@ -45,7 +41,7 @@ const Trigger = (() => {
       // On touch devices, click fires after touchend, so we ignore it
       return;
     }
-    
+
     const now = Date.now();
     const timeSinceLast = now - lastTapTime;
     lastTapTime = now;
@@ -61,16 +57,12 @@ const Trigger = (() => {
       clearTimeout(tapTimer);
     }
 
-    // Double tap detected -> open the safe screen, do NOT add '+' to the sum
     if (tapCount >= 2) {
       tapCount = 0;
       onDoubleTap();
       return;
     }
 
-    // Not a double tap (yet). We intercept the click/touchend on this button,
-    // so calculator.js never sees it. Once the double-tap window closes
-    // without a second tap, treat it as a normal '+' press.
     tapTimer = setTimeout(() => {
       tapCount = 0;
       if (typeof Calculator !== 'undefined') {
@@ -85,14 +77,14 @@ const Trigger = (() => {
   function showSafeScreen() {
     const calcView = document.getElementById('calculator-view');
     const safeView = document.getElementById('safe-screen-view');
-    
+
     if (calcView) {
       calcView.style.opacity = '0';
       setTimeout(() => {
         calcView.style.display = 'none';
       }, 200);
     }
-    
+
     if (safeView) {
       safeView.style.display = 'flex';
       safeView.style.opacity = '0';
@@ -113,7 +105,7 @@ const Trigger = (() => {
   function showCalculator() {
     const calcView = document.getElementById('calculator-view');
     const safeView = document.getElementById('safe-screen-view');
-    
+
     if (safeView) {
       safeView.style.opacity = '0';
       setTimeout(() => {
@@ -121,7 +113,7 @@ const Trigger = (() => {
         safeView.style.opacity = '1';
       }, 200);
     }
-    
+
     if (calcView) {
       calcView.style.display = 'flex';
       setTimeout(() => {
@@ -133,17 +125,10 @@ const Trigger = (() => {
     if (history.pushState) {
       history.pushState({ screen: 'calculator' }, '', '/');
     }
-    
-    // Clear any storage for privacy
+
     clearStorage();
   }
 
-  /**
-   * Instantly snap back to the calculator with NO fade/animation.
-   * Used when the app loses focus (tab switch, app-switcher, screen lock)
-   * so the OS can't capture a screenshot mid-fade with the safe screen
-   * still partially visible.
-   */
   function hideSafeScreenInstantly() {
     const calcView = document.getElementById('calculator-view');
     const safeView = document.getElementById('safe-screen-view');
@@ -151,7 +136,7 @@ const Trigger = (() => {
     if (safeView) {
       safeView.style.transition = 'none';
       safeView.style.display = 'none';
-      safeView.style.opacity = '1'; // reset so the next open looks normal
+      safeView.style.opacity = '1';
     }
 
     if (calcView) {
@@ -160,8 +145,6 @@ const Trigger = (() => {
       calcView.style.opacity = '1';
     }
 
-    // Re-enable transitions on the next frame so future user-initiated
-    // opens/closes still animate normally.
     requestAnimationFrame(() => {
       if (safeView) safeView.style.transition = '';
       if (calcView) calcView.style.transition = '';
@@ -170,22 +153,17 @@ const Trigger = (() => {
     clearStorage();
   }
 
-  /**
-   * Clear browser storage for privacy
-   */
   function clearStorage() {
     try {
-      // Preserve the user's custom emergency contacts across privacy wipes.
       const preserved = localStorage.getItem('safecalc_custom_contacts');
       if (localStorage.length > 0) localStorage.clear();
       if (preserved) localStorage.setItem('safecalc_custom_contacts', preserved);
     } catch (e) {}
-    
+
     try {
       if (sessionStorage.length > 0) sessionStorage.clear();
     } catch (e) {}
-    
-    // Clear cookies
+
     try {
       document.cookie.split(";").forEach(c => {
         document.cookie = c

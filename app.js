@@ -1,7 +1,9 @@
 const App = (() => {
   let isInitialized = false;
 
+
   function runPrivacyAudit() {
+
     try {
       if (localStorage.length > 0) {
         console.log('[Privacy] Clearing localStorage');
@@ -65,6 +67,7 @@ const App = (() => {
     runPrivacyAudit();
   }
 
+
   function handleOrientationChange() {
     setTimeout(() => {
       const calcView = document.getElementById('calculator-view');
@@ -89,7 +92,6 @@ const App = (() => {
 
     if (typeof I18n === 'undefined') return;
 
-    // Reflect whatever locale I18n.init() already detected/selected.
     select.value = I18n.getLocale();
 
     select.addEventListener('change', () => {
@@ -121,6 +123,7 @@ const App = (() => {
     const buttons = document.querySelectorAll('button');
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
+    
     if (isMobile && 'vibrate' in navigator) {
       buttons.forEach(button => {
         button.addEventListener('click', () => {
@@ -136,6 +139,7 @@ const App = (() => {
         e.preventDefault();
       }
     }, { passive: false });
+    
     
     let lastTouchEnd = 0;
     document.addEventListener('touchend', (e) => {
@@ -219,6 +223,7 @@ const App = (() => {
  
     runPrivacyAudit();
     
+    
     isInitialized = true;
     logInitialization();
     
@@ -234,6 +239,7 @@ const App = (() => {
 })();
 
 App.init();
+const installButton = document.getElementById('installButton');
 const installButton = document.getElementById('installButton');
 
 let deferredPrompt;
