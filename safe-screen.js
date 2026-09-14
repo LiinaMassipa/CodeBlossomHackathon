@@ -326,7 +326,8 @@ const SafeScreen = (() => {
       list.appendChild(buildContactCard(contact));
     });
     custom.forEach((contact, i) => {
-      list.appendChild(buildContactCard(contact, () => {
+      const localizedCustomContact = { ...contact, description: I18n.t('custom_contact_desc') };
+      list.appendChild(buildContactCard(localizedCustomContact, () => {
         removeCustomContact(currentCountry, i);
         render();
       }));
