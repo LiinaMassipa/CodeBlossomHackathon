@@ -240,7 +240,6 @@ const App = (() => {
 
 App.init();
 const installButton = document.getElementById('installButton');
-const installButton = document.getElementById('installButton');
 
 let deferredPrompt;
 
