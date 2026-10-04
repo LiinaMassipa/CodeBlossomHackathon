@@ -239,25 +239,27 @@ const App = (() => {
 })();
 
 App.init();
-const installButton = document.getElementById('installButton');
+(() => {
+  const installButton = document.getElementById('installButton');
+  if (!installButton) return;
+  let deferredPrompt;
 
-let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installButton.style.display = 'block';
+  });
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installButton.style.display = 'block';
-});
+  installButton.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installButton.style.display = 'none';
+  });
 
-installButton.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  installButton.style.display = 'none';
-});
-
-window.addEventListener('appinstalled', () => {
-  deferredPrompt = null;
-  installButton.style.display = 'none';
-});
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    installButton.style.display = 'none';
+  });
+})();
